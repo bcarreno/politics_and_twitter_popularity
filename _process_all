@@ -1,0 +1,5 @@
+#!/bin/sh
+
+./plotter 4 > graph1
+./plotter 1 > graph2
+sed -f template.sed article.md > article

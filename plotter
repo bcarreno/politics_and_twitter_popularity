@@ -1,0 +1,126 @@
+#!/usr/bin/env ruby
+
+require 'date'
+
+def self.footer
+  <<EOT
+        ]
+    });
+});
+  </script>
+</body>
+</html>
+EOT
+end
+
+def header
+  <<EOT
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+  <script src="http://code.highcharts.com/highcharts.js"></script>
+</head>
+<body>
+  <div id="container" style="width:100%; height:400px;"></div>
+  <script>
+$(function () {
+    $('#container').highcharts({
+        chart: {
+            type: 'line',
+            height: 1000
+        },
+        title: {
+            text: 'Twitter Followers'
+        },
+        subtitle: {
+            text: 'Irregular time data in Highcharts JS'
+        },
+        xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: { // don't display the dummy year
+                month: '%e. %b',
+                year: '%b'
+            },
+            title: {
+                text: 'Date'
+            }
+        },
+        yAxis: {
+            title: {
+                text: 'Followers'
+            }
+        },
+        tooltip: {
+            headerFormat: '<b>{series.name}</b><br>',
+            pointFormat: '{point.x:%e. %b}: {point.y:.2f} m'
+        },
+
+        plotOptions: {
+           series: {
+                marker: {
+                    enabled: false
+                }
+            },
+          spline: {
+                marker: {
+                    enabled: false
+                }
+            }
+        },
+
+        series: [
+EOT
+end
+
+def logger(string)
+  puts "- #{string}" if false
+end
+
+def js_date(date)
+  [date.year, date.month - 1, date.day].join(', ')
+end
+
+def accept?(name)
+  case ARGV[0]
+  when "4"
+    %w(HillaryClinton realDonaldTrump).include?(name)
+  when "1"
+    !%w(HillaryClinton realDonaldTrump).include?(name)
+  else
+    true
+  end
+end
+
+### MAIN
+
+puts header
+
+followers = {}
+File.readlines('twitter.log').each do |line|
+  logger line
+  name, date, time, count = line.split
+  next if count.nil?
+  date = Date.strptime(date, '%Y-%m-%d')
+  next unless (Date.new(2015, 1, 21)..Date.new(2016, 2, 28)).include?(date)
+
+  logger [name, date, time, count]
+  followers[name] = {} if followers[name].nil?
+  followers[name][date] = count if followers[name][date].nil?
+end
+
+candidates_count = 0
+followers.each do |name, collection|
+  next unless accept?(name)
+  candidates_count += 1
+  puts "{"
+  puts %Q(name: "#{name}",)
+  puts "data: ["
+  puts collection.sort.map { |date, count|
+    "  [Date.UTC(#{js_date(date)}, 12,0,0), #{count}]" }.
+    join(",\n")
+  separator = candidates_count < followers.keys.count ? ',' : ''
+  puts "]}#{separator}"
+end
+
+puts footer
