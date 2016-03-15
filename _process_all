@@ -1,5 +1,10 @@
 #!/bin/sh
 
-./plotter graph1 '4 Million Group' 2 high_group > graph1
-./plotter graph2 '1 Million Group' 2 low_group  > graph2
+echo "BernieSanders	2015-08-22	12:00:00	460000
+RealBenCarson	2015-08-22	12:00:00	500000" | \
+cat - twitter.raw > twitter.log
+
+./plot graph1 '4 Million Group' 1 400 linear high_group > graph1
+./plot graph2 '1 Million Group' 2 500 linear low_group  > graph2
+#./plot graph3 'log scale' 2 500 logarithmic both  > graph3
 sed -f template.sed article.md > article
