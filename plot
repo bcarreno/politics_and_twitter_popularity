@@ -12,15 +12,15 @@ def self.footer
 EOT
 end
 
-def header(div, title)
+def header(div, title, height, scale_type)
 <<EOT
 <div id="#{div}"></div>
 <script>
 $(function () {
   $('##{div}').highcharts({
       chart: {
-          type: 'line',
-          height: 600
+          type: '#{scale_type}',
+          height: #{height}
       },
       title: {
           text: '#{title}'
@@ -71,19 +71,23 @@ def js_date(date)
 end
 
 def accept?(name)
-  case ARGV[3]
+  finalists = %w(sensanders tedcruz JebBush marcorubio RealBenCarson BernieSanders HillaryClinton realDonaldTrump)
+  return unless finalists.include?(name)
+  case ARGV[5]
+  when "both"
+    true
   when "high_group"
     %w(HillaryClinton realDonaldTrump).include?(name)
   when "low_group"
     !%w(HillaryClinton realDonaldTrump).include?(name)
   else
-    true
+    raise "invalid option: #{ARGV[5]}"
   end
 end
 
 ### MAIN
 
-puts header ARGV[0], ARGV[1]
+puts header ARGV[0], ARGV[1], ARGV[3], ARGV[4]
 
 followers = {}
 File.readlines('twitter.log').each do |line|
