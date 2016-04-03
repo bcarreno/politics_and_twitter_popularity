@@ -19,7 +19,7 @@ def header(div, title, height, scale_type)
 $(function () {
   $('##{div}').highcharts({
       chart: {
-          type: '#{scale_type}',
+          type: 'line',
           height: #{height}
       },
       title: {
@@ -36,6 +36,7 @@ $(function () {
           }
       },
       yAxis: {
+          type: '#{scale_type}',
           title: {
               text: 'Followers'
           }
@@ -101,6 +102,11 @@ File.readlines('twitter.log').each do |line|
   followers[name][date] = count if followers[name][date].nil?
 end
 
+offsets = {}
+followers.each do |name, collection|
+  offsets[name] = ARGV[4] == 'logarithmic' ? collection.sort[0][1].to_i : 0
+end
+
 step = [1, ARGV[2].to_i].max
 candidates_count = 0
 followers.each do |name, collection|
@@ -113,7 +119,7 @@ followers.each do |name, collection|
     sort.
     each_with_index.
     select{ |x, i| i % step == 0 }.
-    map{ |x, i| "  [Date.UTC(#{js_date(x[0])}, 12,0,0), #{x[1]}]" }.
+    map{ |x, i| "  [Date.UTC(#{js_date(x[0])}, 12,0,0), #{x[1].to_i-offsets[name]}]" }.
     join(",\n")
   separator = candidates_count < followers.keys.count ? ',' : ''
   puts "]}#{separator}"
