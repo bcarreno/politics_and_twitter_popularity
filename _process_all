@@ -1,10 +1,12 @@
 #!/bin/sh
 
+# we're missing these 2 initial data points, enter an estimation manually
 echo "BernieSanders	2015-08-22	12:00:00	460000
 RealBenCarson	2015-08-22	12:00:00	500000" | \
-cat - twitter.raw > twitter.log
+cat - twitter.log > twitter.log.full
 
-./plot graph1 '4 Million Group' 1 400 line high_group > graph1
-./plot graph2 '1 Million Group' 2 500 line low_group  > graph2
-#./plot graph3 'log scale' 2 500 logarithmic both  > graph3
+./plot --title='Both Groups'          --id=graph0 --group=both --step=1 --height=400 > graph0
+./plot --title='Multi Million Group'  --id=graph1 --group=high_group --step=1 --height=400 > graph1
+./plot --title='Single Million Group' --id=graph2 --group=low_group --step=2 --height=500 > graph2
+
 sed -f template.sed article.md > article

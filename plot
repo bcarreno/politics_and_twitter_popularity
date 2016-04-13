@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'date'
-require 'byebug'
+require 'optparse'
 
 def self.footer
 <<EOT
@@ -12,7 +12,7 @@ def self.footer
 EOT
 end
 
-def header(div, title, height, scale_type)
+def header(div, title, height)
 <<EOT
 <div id="#{div}"></div>
 <script>
@@ -36,7 +36,7 @@ $(function () {
           }
       },
       yAxis: {
-          type: '#{scale_type}',
+          type: 'linear',
           title: {
               text: 'Followers'
           }
@@ -71,10 +71,10 @@ def js_date(date)
   [date.year, date.month - 1, date.day].join(', ')
 end
 
-def accept?(name)
+def accept?(name, group)
   finalists = %w(sensanders tedcruz JebBush marcorubio RealBenCarson BernieSanders HillaryClinton realDonaldTrump)
   return unless finalists.include?(name)
-  case ARGV[5]
+  case group
   when "both"
     true
   when "high_group"
@@ -88,10 +88,34 @@ end
 
 ### MAIN
 
-puts header ARGV[0], ARGV[1], ARGV[3], ARGV[4]
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: example.rb [options]"
+
+  opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+    options[:verbose] = v
+  end
+  opts.on("-tTITLE", "--title=TITLE", "Graph title") do |value|
+    options[:title] = value
+  end
+  opts.on("-gGROUP", "--group=GROUP", "Data group") do |value|
+    options[:group] = value
+  end
+  opts.on("-iDIV", "--id=DIV", "div id") do |value|
+    options[:id] = value
+  end
+  opts.on("-sSTEP", "--step=STEP", "How many days for each graph point") do |value|
+    options[:step] = value.to_i
+  end
+  opts.on("-hHEIGHT", "--height=HEIGHT", "Graph height") do |value|
+    options[:height] = value.to_i
+  end
+end.parse!
+
+puts header options[:id], options[:title], options[:height]
 
 followers = {}
-File.readlines('twitter.log').each do |line|
+File.readlines('twitter.log.full').each do |line|
   logger line
   name, date, time, count = line.split
   next if count.nil?
@@ -102,15 +126,10 @@ File.readlines('twitter.log').each do |line|
   followers[name][date] = count if followers[name][date].nil?
 end
 
-offsets = {}
-followers.each do |name, collection|
-  offsets[name] = ARGV[4] == 'logarithmic' ? collection.sort[0][1].to_i : 0
-end
-
-step = [1, ARGV[2].to_i].max
+step = [1, options[:step].to_i].max
 candidates_count = 0
 followers.each do |name, collection|
-  next unless accept?(name)
+  next unless accept?(name, options[:group])
   candidates_count += 1
   puts "{"
   puts %Q(name: "#{name}",)
@@ -119,7 +138,7 @@ followers.each do |name, collection|
     sort.
     each_with_index.
     select{ |x, i| i % step == 0 }.
-    map{ |x, i| "  [Date.UTC(#{js_date(x[0])}, 12,0,0), #{x[1].to_i-offsets[name]}]" }.
+    map{ |x, i| "  [Date.UTC(#{js_date(x[0])}, 12,0,0), #{x[1].to_i}]" }.
     join(",\n")
   separator = candidates_count < followers.keys.count ? ',' : ''
   puts "]}#{separator}"
