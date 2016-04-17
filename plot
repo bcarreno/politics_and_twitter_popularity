@@ -25,6 +25,9 @@ $(function () {
       title: {
           text: '#{title}'
       },
+      subtitle: {
+          text: 'Twitter Followers'
+      },
       xAxis: {
           type: 'datetime',
           dateTimeLabelFormats: { // don't display the dummy year
