@@ -82,7 +82,7 @@ def accept?(name, group)
   when "low_group"
     !%w(HillaryClinton realDonaldTrump).include?(name)
   else
-    raise "invalid option: #{ARGV[5]}"
+    raise "invalid group: #{group}"
   end
 end
 
