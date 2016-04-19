@@ -4,7 +4,7 @@
 
 # To execute daily add to crontab:
 # m h  dom mon dow   command
-8 12 * * * /home/bcarreno/twitter.sh >> /home/bcarreno/twitter.log 2>&1
+# 8 12 * * * /home/bcarreno/twitter.sh >> /home/bcarreno/twitter.log 2>&1
 
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
